@@ -1,4 +1,5 @@
 import {
+  IconButton,
   Paper,
   TableBody,
   TableCell,
@@ -6,6 +7,9 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import ClearIcon from "@mui/icons-material/Clear";
+import { Dispatch, MouseEvent } from "react";
 
 interface Column {
   id: "date" | "distance" | "actions";
@@ -31,11 +35,45 @@ const columns: readonly Column[] = [
   },
 ];
 
-interface TrainingTableProps {
-  rows: { date: string; distance: number; actions: undefined }[];
+interface Action {
+  type: "addNewRow" | "deleteRow" | "editRow" | "changeDate" | "changeDistance";
+  payload: any;
 }
 
-export const TrainingTable = ({ rows }: TrainingTableProps) => {
+interface TrainingTableProps {
+  rows: { date: string; distance: number; actions: undefined }[] | [];
+  dispatch: Dispatch<Action>;
+  editedRow: {
+    data: {
+      date: string;
+      distance: number;
+      actions: undefined;
+    };
+    index: number;
+  } | null;
+}
+
+export const TrainingTable = ({ rows, dispatch }: TrainingTableProps) => {
+  const handlerDelete = (event: MouseEvent) => {
+    event.preventDefault();
+
+    const tabRow = (event.target as HTMLTableRowElement).closest("tr");
+    const dateField = tabRow?.firstElementChild?.textContent;
+
+    dispatch({ type: "deleteRow", payload: dateField });
+  };
+
+  const handlerEdit = (
+    event: MouseEvent<HTMLAnchorElement> | MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+
+    const tabRow = (event.target as HTMLTableRowElement).closest("tr");
+    const dateField = tabRow?.firstElementChild?.textContent;
+
+    dispatch({ type: "editRow", payload: dateField });
+  };
+
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }}>
       <TableContainer sx={{ maxHeight: 1111 }}>
@@ -65,7 +103,10 @@ export const TrainingTable = ({ rows }: TrainingTableProps) => {
                 {columns.map((column) => {
                   let value = row[column.id];
                   if (column.id === "actions") {
-                    value = "Йойойо!";
+                    value = undefined;
+                  }
+                  if (column.id === "date") {
+                    value = row.date;
                   }
                   return (
                     <TableCell
@@ -73,7 +114,26 @@ export const TrainingTable = ({ rows }: TrainingTableProps) => {
                       align={column.align}
                       style={{ minWidth: column.minWidth }}
                     >
-                      {value}
+                      {value === undefined ? (
+                        <>
+                          <IconButton
+                            aria-label="edit"
+                            size="small"
+                            onClick={(event) => handlerEdit(event)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            aria-label="clear"
+                            size="small"
+                            onClick={(event) => handlerDelete(event)}
+                          >
+                            <ClearIcon />
+                          </IconButton>
+                        </>
+                      ) : (
+                        value
+                      )}
                     </TableCell>
                   );
                 })}
