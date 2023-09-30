@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, FormHelperText, TextField } from "@mui/material";
 import { FormEvent, Dispatch } from "react";
 import { isValidDate, isValidDistance } from "@/utils";
